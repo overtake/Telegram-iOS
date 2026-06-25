@@ -311,6 +311,53 @@ public extension Api {
                 return nil
             }
         }
+        public static func parse_draftMessageWithRichMessage(_ reader: BufferReader) -> DraftMessage? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Api.InputReplyTo?
+            if Int(_1!) & Int(1 << 4) != 0 {if let signature = reader.readInt32() {
+                _2 = Api.parse(reader, signature: signature) as? Api.InputReplyTo
+            } }
+            var _3: String?
+            _3 = parseString(reader)
+            var _4: [Api.MessageEntity]?
+            if Int(_1!) & Int(1 << 3) != 0 {if let _ = reader.readInt32() {
+                _4 = Api.parseVector(reader, elementSignature: 0, elementType: Api.MessageEntity.self)
+            } }
+            var _5: Api.InputMedia?
+            if Int(_1!) & Int(1 << 5) != 0 {if let signature = reader.readInt32() {
+                _5 = Api.parse(reader, signature: signature) as? Api.InputMedia
+            } }
+            var _6: Int32?
+            _6 = reader.readInt32()
+            var _7: Int64?
+            if Int(_1!) & Int(1 << 7) != 0 {_7 = reader.readInt64() }
+            var _8: Api.SuggestedPost?
+            if Int(_1!) & Int(1 << 8) != 0 {if let signature = reader.readInt32() {
+                _8 = Api.parse(reader, signature: signature) as? Api.SuggestedPost
+            } }
+            var _9: String?
+            if Int(_1!) & Int(1 << 9) != 0 {if let signature = reader.readInt32() {
+                _9 = parseRichMessageFallbackText(reader: reader, signature: signature)
+            } }
+            let _c1 = _1 != nil
+            let _c2 = (Int(_1!) & Int(1 << 4) == 0) || _2 != nil
+            let _c3 = _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 3) == 0) || _4 != nil
+            let _c5 = (Int(_1!) & Int(1 << 5) == 0) || _5 != nil
+            let _c6 = _6 != nil
+            let _c7 = (Int(_1!) & Int(1 << 7) == 0) || _7 != nil
+            let _c8 = (Int(_1!) & Int(1 << 8) == 0) || _8 != nil
+            let _c9 = (Int(_1!) & Int(1 << 9) == 0) || _9 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 {
+                let sanitizedFlags = _1! & ~Int32(1 << 9)
+                let messageText = _9.map { mergeRichMessageFallback(message: _3!, fallback: $0) } ?? _3!
+                return Api.DraftMessage.draftMessage(flags: sanitizedFlags, replyTo: _2, message: messageText, entities: _4, media: _5, date: _6!, effect: _7, suggestedPost: _8)
+            }
+            else {
+                return nil
+            }
+        }
         public static func parse_draftMessageEmpty(_ reader: BufferReader) -> DraftMessage? {
             var _1: Int32?
             _1 = reader.readInt32()

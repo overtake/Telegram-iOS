@@ -6533,6 +6533,22 @@ public extension Api.functions.messages {
                 }
 }
 public extension Api.functions.messages {
+                static func getRichMessage(peer: Api.InputPeer, id: Int32) -> (FunctionDescription, Buffer, DeserializeFunctionResponse<Api.messages.Messages>) {
+                    let buffer = Buffer()
+                    buffer.appendInt32(1343580623)
+                    peer.serialize(buffer, true)
+                    serializeInt32(id, buffer: buffer, boxed: false)
+                    return (FunctionDescription(name: "messages.getRichMessage", parameters: [("peer", String(describing: peer)), ("id", String(describing: id))]), buffer, DeserializeFunctionResponse { (buffer: Buffer) -> Api.messages.Messages? in
+                        let reader = BufferReader(buffer)
+                        var result: Api.messages.Messages?
+                        if let signature = reader.readInt32() {
+                            result = Api.parse(reader, signature: signature) as? Api.messages.Messages
+                        }
+                        return result
+                    })
+                }
+}
+public extension Api.functions.messages {
                 static func getMessagesReactions(peer: Api.InputPeer, id: [Int32]) -> (FunctionDescription, Buffer, DeserializeFunctionResponse<Api.Updates>) {
                     let buffer = Buffer()
                     buffer.appendInt32(-1950707482)

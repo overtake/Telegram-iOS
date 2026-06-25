@@ -734,6 +734,20 @@ public extension Api {
             if Int(_1!) & Int(1 << 8) != 0 {_15 = reader.readInt32() }
             var _16: Int32?
             if Int(_1!) & Int(1 << 8) != 0 {_16 = reader.readInt32() }
+            var _17: Int32?
+            if Int(_1!) & Int(1 << 9) != 0 {_17 = reader.readInt32() }
+            var _18: String?
+            if Int(_1!) & Int(1 << 11) != 0 {_18 = parseString(reader) }
+            var _19: Int32?
+            if Int(_1!) & Int(1 << 11) != 0 {_19 = reader.readInt32() }
+            var _20: Int32?
+            if Int(_1!) & Int(1 << 11) != 0 {_20 = reader.readInt32() }
+            var _21: Int32?
+            if Int(_1!) & Int(1 << 12) != 0 {_21 = reader.readInt32() }
+            var _22: Swift.Bool = true
+            if Int(_1!) & Int(1 << 13) != 0 {
+                _22 = consumeStarGiftBackground(reader)
+            }
             let _c1 = _1 != nil
             let _c2 = _2 != nil
             let _c3 = _3 != nil
@@ -750,12 +764,29 @@ public extension Api {
             let _c14 = (Int(_1!) & Int(1 << 6) == 0) || _14 != nil
             let _c15 = (Int(_1!) & Int(1 << 8) == 0) || _15 != nil
             let _c16 = (Int(_1!) & Int(1 << 8) == 0) || _16 != nil
-            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 && _c12 && _c13 && _c14 && _c15 && _c16 {
-                return Api.StarGift.starGift(flags: _1!, id: _2!, sticker: _3!, stars: _4!, availabilityRemains: _5, availabilityTotal: _6, availabilityResale: _7, convertStars: _8!, firstSaleDate: _9, lastSaleDate: _10, upgradeStars: _11, resellMinStars: _12, title: _13, releasedBy: _14, perUserTotal: _15, perUserRemains: _16)
+            let _c17 = (Int(_1!) & Int(1 << 9) == 0) || _17 != nil
+            let _c18 = (Int(_1!) & Int(1 << 11) == 0) || _18 != nil
+            let _c19 = (Int(_1!) & Int(1 << 11) == 0) || _19 != nil
+            let _c20 = (Int(_1!) & Int(1 << 11) == 0) || _20 != nil
+            let _c21 = (Int(_1!) & Int(1 << 12) == 0) || _21 != nil
+            let _c22 = (Int(_1!) & Int(1 << 13) == 0) || _22
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 && _c12 && _c13 && _c14 && _c15 && _c16 && _c17 && _c18 && _c19 && _c20 && _c21 && _c22 {
+                let sanitizedFlags = _1! & ~((Int32(1) << 7) | (Int32(1) << 9) | (Int32(1) << 10) | (Int32(1) << 11) | (Int32(1) << 12) | (Int32(1) << 13))
+                return Api.StarGift.starGift(flags: sanitizedFlags, id: _2!, sticker: _3!, stars: _4!, availabilityRemains: _5, availabilityTotal: _6, availabilityResale: _7, convertStars: _8!, firstSaleDate: _9, lastSaleDate: _10, upgradeStars: _11, resellMinStars: _12, title: _13, releasedBy: _14, perUserTotal: _15, perUserRemains: _16)
             }
             else {
                 return nil
             }
+        }
+        private static func consumeStarGiftBackground(_ reader: BufferReader) -> Swift.Bool {
+            guard let signature = reader.readInt32() else {
+                return false
+            }
+            guard signature == -1342872680 else {
+                telegramApiLog("StarGiftBackground constructor \(String(UInt32(bitPattern: signature), radix: 16, uppercase: false)) not supported")
+                return false
+            }
+            return reader.readInt32() != nil && reader.readInt32() != nil && reader.readInt32() != nil
         }
         public static func parse_starGiftUnique(_ reader: BufferReader) -> StarGift? {
             var _1: Int32?

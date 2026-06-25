@@ -450,6 +450,8 @@ public extension Api {
             if Int(_1!) & Int(1 << 10) != 0 {_9 = reader.readInt32() }
             var _10: Int32?
             if Int(_1!) & Int(1 << 11) != 0 {_10 = reader.readInt32() }
+            var _11: Buffer?
+            if Int(_1!) & Int(1 << 12) != 0 {_11 = parseBytes(reader) }
             let _c1 = _1 != nil
             let _c2 = (Int(_1!) & Int(1 << 4) == 0) || _2 != nil
             let _c3 = (Int(_1!) & Int(1 << 0) == 0) || _3 != nil
@@ -460,8 +462,10 @@ public extension Api {
             let _c8 = (Int(_1!) & Int(1 << 7) == 0) || _8 != nil
             let _c9 = (Int(_1!) & Int(1 << 10) == 0) || _9 != nil
             let _c10 = (Int(_1!) & Int(1 << 11) == 0) || _10 != nil
-            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 {
-                return Api.MessageReplyHeader.messageReplyHeader(flags: _1!, replyToMsgId: _2, replyToPeerId: _3, replyFrom: _4, replyMedia: _5, replyToTopId: _6, quoteText: _7, quoteEntities: _8, quoteOffset: _9, todoItemId: _10)
+            let _c11 = (Int(_1!) & Int(1 << 12) == 0) || _11 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 {
+                let sanitizedFlags = _1! & ~Int32(1 << 12)
+                return Api.MessageReplyHeader.messageReplyHeader(flags: sanitizedFlags, replyToMsgId: _2, replyToPeerId: _3, replyFrom: _4, replyMedia: _5, replyToTopId: _6, quoteText: _7, quoteEntities: _8, quoteOffset: _9, todoItemId: _10)
             }
             else {
                 return nil

@@ -3227,6 +3227,41 @@ public extension Api {
                 return nil
             }
         }
+        public static func parse_updateMessagePollWithPeer(_ reader: BufferReader) -> Update? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Api.Peer?
+            if Int(_1!) & Int(1 << 1) != 0 {if let signature = reader.readInt32() {
+                _2 = Api.parse(reader, signature: signature) as? Api.Peer
+            } }
+            var _3: Int32?
+            if Int(_1!) & Int(1 << 1) != 0 {_3 = reader.readInt32() }
+            var _4: Int32?
+            if Int(_1!) & Int(1 << 2) != 0 {_4 = reader.readInt32() }
+            var _5: Int64?
+            _5 = reader.readInt64()
+            var _6: Api.Poll?
+            if Int(_1!) & Int(1 << 0) != 0 {if let signature = reader.readInt32() {
+                _6 = Api.parse(reader, signature: signature) as? Api.Poll
+            } }
+            var _7: Api.PollResults?
+            if let signature = reader.readInt32() {
+                _7 = Api.parse(reader, signature: signature) as? Api.PollResults
+            }
+            let _c1 = _1 != nil
+            let _c2 = (Int(_1!) & Int(1 << 1) == 0) || _2 != nil
+            let _c3 = (Int(_1!) & Int(1 << 1) == 0) || _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 2) == 0) || _4 != nil
+            let _c5 = _5 != nil
+            let _c6 = (Int(_1!) & Int(1 << 0) == 0) || _6 != nil
+            let _c7 = _7 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 {
+                return Api.Update.updateMessagePoll(flags: _1! & ~Int32(6), pollId: _5!, poll: _6, results: _7!)
+            }
+            else {
+                return nil
+            }
+        }
         public static func parse_updateMessagePollVote(_ reader: BufferReader) -> Update? {
             var _1: Int64?
             _1 = reader.readInt64()
@@ -3873,6 +3908,41 @@ public extension Api {
                 return nil
             }
         }
+        public static func parse_updateReadHistoryInboxWithTopMessage(_ reader: BufferReader) -> Update? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Int32?
+            if Int(_1!) & Int(1 << 0) != 0 {_2 = reader.readInt32() }
+            var _3: Api.Peer?
+            if let signature = reader.readInt32() {
+                _3 = Api.parse(reader, signature: signature) as? Api.Peer
+            }
+            var _4: Int32?
+            if Int(_1!) & Int(1 << 1) != 0 {_4 = reader.readInt32() }
+            var _5: Int32?
+            _5 = reader.readInt32()
+            var _6: Int32?
+            _6 = reader.readInt32()
+            var _7: Int32?
+            _7 = reader.readInt32()
+            var _8: Int32?
+            _8 = reader.readInt32()
+            let _c1 = _1 != nil
+            let _c2 = (Int(_1!) & Int(1 << 0) == 0) || _2 != nil
+            let _c3 = _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 1) == 0) || _4 != nil
+            let _c5 = _5 != nil
+            let _c6 = _6 != nil
+            let _c7 = _7 != nil
+            let _c8 = _8 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 {
+                let sanitizedFlags = _1! & ~Int32(1 << 1)
+                return Api.Update.updateReadHistoryInbox(flags: sanitizedFlags, folderId: _2, peer: _3!, maxId: _5!, stillUnreadCount: _6!, pts: _7!, ptsCount: _8!)
+            }
+            else {
+                return nil
+            }
+        }
         public static func parse_updateReadHistoryOutbox(_ reader: BufferReader) -> Update? {
             var _1: Api.Peer?
             if let signature = reader.readInt32() {
@@ -4314,6 +4384,28 @@ public extension Api {
             let _c2 = _2 != nil
             if _c1 && _c2 {
                 return Api.Update.updateUserTyping(userId: _1!, action: _2!)
+            }
+            else {
+                return nil
+            }
+        }
+        public static func parse_updateUserTypingWithTopMessage(_ reader: BufferReader) -> Update? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Int64?
+            _2 = reader.readInt64()
+            var _3: Int32?
+            if Int(_1!) & Int(1 << 0) != 0 {_3 = reader.readInt32() }
+            var _4: Api.SendMessageAction?
+            if let signature = reader.readInt32() {
+                _4 = Api.parse(reader, signature: signature) as? Api.SendMessageAction
+            }
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = (Int(_1!) & Int(1 << 0) == 0) || _3 != nil
+            let _c4 = _4 != nil
+            if _c1 && _c2 && _c3 && _c4 {
+                return Api.Update.updateUserTyping(userId: _2!, action: _4!)
             }
             else {
                 return nil

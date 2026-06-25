@@ -310,6 +310,31 @@ public extension Api {
                 return nil
             }
         }
+        public static func parse_keyboardButtonCallbackWithStyle(_ reader: BufferReader) -> KeyboardButton? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Swift.Bool = true
+            if let flags = _1, Int(flags) & Int(1 << 10) != 0 {
+                _2 = consumeKeyboardButtonStyle(reader)
+            }
+            var _3: String?
+            _3 = parseString(reader)
+            var _4: Buffer?
+            _4 = parseBytes(reader)
+            let _c1 = _1 != nil
+            let _c2 = _1.map { flags in
+                (Int(flags) & Int(1 << 10) == 0) || _2
+            } ?? false
+            let _c3 = _3 != nil
+            let _c4 = _4 != nil
+            if _c1 && _c2 && _c3 && _c4 {
+                let sanitizedFlags = _1! & ~Int32(1 << 10)
+                return Api.KeyboardButton.keyboardButtonCallback(flags: sanitizedFlags, text: _3!, data: _4!)
+            }
+            else {
+                return nil
+            }
+        }
         public static func parse_keyboardButtonCopy(_ reader: BufferReader) -> KeyboardButton? {
             var _1: String?
             _1 = parseString(reader)
@@ -447,6 +472,44 @@ public extension Api {
             else {
                 return nil
             }
+        }
+        public static func parse_keyboardButtonUrlWithStyle(_ reader: BufferReader) -> KeyboardButton? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Swift.Bool = true
+            if Int(_1!) & Int(1 << 10) != 0 {
+                _2 = consumeKeyboardButtonStyle(reader)
+            }
+            var _3: String?
+            _3 = parseString(reader)
+            var _4: String?
+            _4 = parseString(reader)
+            let _c1 = _1 != nil
+            let _c2 = (Int(_1!) & Int(1 << 10) == 0) || _2
+            let _c3 = _3 != nil
+            let _c4 = _4 != nil
+            if _c1 && _c2 && _c3 && _c4 {
+                return Api.KeyboardButton.keyboardButtonUrl(text: _3!, url: _4!)
+            }
+            else {
+                return nil
+            }
+        }
+        private static func consumeKeyboardButtonStyle(_ reader: BufferReader) -> Swift.Bool {
+            guard let signature = reader.readInt32() else {
+                return false
+            }
+            guard signature == 1339896880 else {
+                telegramApiLog("KeyboardButtonStyle constructor \(String(UInt32(bitPattern: signature), radix: 16, uppercase: false)) not supported")
+                return false
+            }
+            guard let flags = reader.readInt32() else {
+                return false
+            }
+            if Int(flags) & Int(1 << 3) != 0 {
+                return reader.readInt64() != nil
+            }
+            return true
         }
         public static func parse_keyboardButtonUrlAuth(_ reader: BufferReader) -> KeyboardButton? {
             var _1: Int32?

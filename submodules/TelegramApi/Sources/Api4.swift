@@ -253,6 +253,30 @@ public extension Api {
                 return nil
             }
         }
+        public static func parse_channelParticipantWithRank(_ reader: BufferReader) -> ChannelParticipant? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Int64?
+            _2 = reader.readInt64()
+            var _3: Int32?
+            _3 = reader.readInt32()
+            var _4: Int32?
+            if Int(_1!) & Int(1 << 0) != 0 {_4 = reader.readInt32() }
+            var _5: String?
+            if Int(_1!) & Int(1 << 2) != 0 {_5 = parseString(reader) }
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 0) == 0) || _4 != nil
+            let _c5 = (Int(_1!) & Int(1 << 2) == 0) || _5 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 {
+                let sanitizedFlags = _1! & ~(Int32(1) << 2)
+                return Api.ChannelParticipant.channelParticipant(flags: sanitizedFlags, userId: _2!, date: _3!, subscriptionUntilDate: _4)
+            }
+            else {
+                return nil
+            }
+        }
         public static func parse_channelParticipantAdmin(_ reader: BufferReader) -> ChannelParticipant? {
             var _1: Int32?
             _1 = reader.readInt32()
@@ -1184,6 +1208,12 @@ public extension Api {
             if Int(_2!) & Int(1 << 18) != 0 {_45 = reader.readInt32() }
             var _46: Int64?
             if Int(_2!) & Int(1 << 21) != 0 {_46 = reader.readInt64() }
+            var _47: Swift.Bool = true
+            if Int(_2!) & Int(1 << 22) != 0 {
+                _47 = consumeProfileTab(reader)
+            }
+            var _48: Int64?
+            if Int(_2!) & Int(1 << 23) != 0 {_48 = reader.readInt64() }
             let _c1 = _1 != nil
             let _c2 = _2 != nil
             let _c3 = _3 != nil
@@ -1230,12 +1260,21 @@ public extension Api {
             let _c44 = (Int(_2!) & Int(1 << 17) == 0) || _44 != nil
             let _c45 = (Int(_2!) & Int(1 << 18) == 0) || _45 != nil
             let _c46 = (Int(_2!) & Int(1 << 21) == 0) || _46 != nil
-            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 && _c12 && _c13 && _c14 && _c15 && _c16 && _c17 && _c18 && _c19 && _c20 && _c21 && _c22 && _c23 && _c24 && _c25 && _c26 && _c27 && _c28 && _c29 && _c30 && _c31 && _c32 && _c33 && _c34 && _c35 && _c36 && _c37 && _c38 && _c39 && _c40 && _c41 && _c42 && _c43 && _c44 && _c45 && _c46 {
-                return Api.ChatFull.channelFull(flags: _1!, flags2: _2!, id: _3!, about: _4!, participantsCount: _5, adminsCount: _6, kickedCount: _7, bannedCount: _8, onlineCount: _9, readInboxMaxId: _10!, readOutboxMaxId: _11!, unreadCount: _12!, chatPhoto: _13!, notifySettings: _14!, exportedInvite: _15, botInfo: _16!, migratedFromChatId: _17, migratedFromMaxId: _18, pinnedMsgId: _19, stickerset: _20, availableMinId: _21, folderId: _22, linkedChatId: _23, location: _24, slowmodeSeconds: _25, slowmodeNextSendDate: _26, statsDc: _27, pts: _28!, call: _29, ttlPeriod: _30, pendingSuggestions: _31, groupcallDefaultJoinAs: _32, themeEmoticon: _33, requestsPending: _34, recentRequesters: _35, defaultSendAs: _36, availableReactions: _37, reactionsLimit: _38, stories: _39, wallpaper: _40, boostsApplied: _41, boostsUnrestrict: _42, emojiset: _43, botVerification: _44, stargiftsCount: _45, sendPaidMessagesStars: _46)
+            let _c47 = (Int(_2!) & Int(1 << 22) == 0) || _47
+            let _c48 = (Int(_2!) & Int(1 << 23) == 0) || _48 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 && _c12 && _c13 && _c14 && _c15 && _c16 && _c17 && _c18 && _c19 && _c20 && _c21 && _c22 && _c23 && _c24 && _c25 && _c26 && _c27 && _c28 && _c29 && _c30 && _c31 && _c32 && _c33 && _c34 && _c35 && _c36 && _c37 && _c38 && _c39 && _c40 && _c41 && _c42 && _c43 && _c44 && _c45 && _c46 && _c47 && _c48 {
+                let sanitizedFlags2 = _2! & ~((Int32(1) << 22) | (Int32(1) << 23))
+                return Api.ChatFull.channelFull(flags: _1!, flags2: sanitizedFlags2, id: _3!, about: _4!, participantsCount: _5, adminsCount: _6, kickedCount: _7, bannedCount: _8, onlineCount: _9, readInboxMaxId: _10!, readOutboxMaxId: _11!, unreadCount: _12!, chatPhoto: _13!, notifySettings: _14!, exportedInvite: _15, botInfo: _16!, migratedFromChatId: _17, migratedFromMaxId: _18, pinnedMsgId: _19, stickerset: _20, availableMinId: _21, folderId: _22, linkedChatId: _23, location: _24, slowmodeSeconds: _25, slowmodeNextSendDate: _26, statsDc: _27, pts: _28!, call: _29, ttlPeriod: _30, pendingSuggestions: _31, groupcallDefaultJoinAs: _32, themeEmoticon: _33, requestsPending: _34, recentRequesters: _35, defaultSendAs: _36, availableReactions: _37, reactionsLimit: _38, stories: _39, wallpaper: _40, boostsApplied: _41, boostsUnrestrict: _42, emojiset: _43, botVerification: _44, stargiftsCount: _45, sendPaidMessagesStars: _46)
             }
             else {
                 return nil
             }
+        }
+        private static func consumeProfileTab(_ reader: BufferReader) -> Swift.Bool {
+            guard reader.readInt32() != nil else {
+                return false
+            }
+            return true
         }
         public static func parse_chatFull(_ reader: BufferReader) -> ChatFull? {
             var _1: Int32?

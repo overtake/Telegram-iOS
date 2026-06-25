@@ -1,3 +1,20 @@
+private func consumeSearchPostsFlood(_ reader: BufferReader) -> Bool {
+    guard let signature = reader.readInt32() else {
+        return false
+    }
+    guard signature == 1040931690 else {
+        telegramApiLog("Unsupported searchPostsFlood constructor \(String(UInt32(bitPattern: signature), radix: 16, uppercase: false))")
+        return false
+    }
+    guard let flags = reader.readInt32(), reader.readInt32() != nil, reader.readInt32() != nil else {
+        return false
+    }
+    if Int(flags) & Int(1 << 1) != 0, reader.readInt32() == nil {
+        return false
+    }
+    return reader.readInt64() != nil
+}
+
 public extension Api.messages {
     enum ForumTopics: TypeConstructorDescription {
         case forumTopics(flags: Int32, count: Int32, topics: [Api.ForumTopic], messages: [Api.Message], chats: [Api.Chat], users: [Api.User], pts: Int32)
@@ -795,6 +812,34 @@ public extension Api.messages {
                 return nil
             }
         }
+        public static func parse_messagesWithTopics(_ reader: BufferReader) -> Messages? {
+            var _1: [Api.Message]?
+            if let _ = reader.readInt32() {
+                _1 = Api.parseVector(reader, elementSignature: 0, elementType: Api.Message.self)
+            }
+            var _2: [Api.ForumTopic]?
+            if let _ = reader.readInt32() {
+                _2 = Api.parseVector(reader, elementSignature: 0, elementType: Api.ForumTopic.self)
+            }
+            var _3: [Api.Chat]?
+            if let _ = reader.readInt32() {
+                _3 = Api.parseVector(reader, elementSignature: 0, elementType: Api.Chat.self)
+            }
+            var _4: [Api.User]?
+            if let _ = reader.readInt32() {
+                _4 = Api.parseVector(reader, elementSignature: 0, elementType: Api.User.self)
+            }
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = _3 != nil
+            let _c4 = _4 != nil
+            if _c1 && _c2 && _c3 && _c4 {
+                return Api.messages.Messages.messages(messages: _1!, chats: _3!, users: _4!)
+            }
+            else {
+                return nil
+            }
+        }
         public static func parse_messagesNotModified(_ reader: BufferReader) -> Messages? {
             var _1: Int32?
             _1 = reader.readInt32()
@@ -836,6 +881,50 @@ public extension Api.messages {
             let _c7 = _7 != nil
             if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 {
                 return Api.messages.Messages.messagesSlice(flags: _1!, count: _2!, nextRate: _3, offsetIdOffset: _4, messages: _5!, chats: _6!, users: _7!)
+            }
+            else {
+                return nil
+            }
+        }
+        public static func parse_messagesSliceWithTopics(_ reader: BufferReader) -> Messages? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Int32?
+            _2 = reader.readInt32()
+            var _3: Int32?
+            if Int(_1!) & Int(1 << 0) != 0 {_3 = reader.readInt32() }
+            var _4: Int32?
+            if Int(_1!) & Int(1 << 2) != 0 {_4 = reader.readInt32() }
+            var _5: Bool?
+            if Int(_1!) & Int(1 << 3) != 0 {_5 = consumeSearchPostsFlood(reader) }
+            var _6: [Api.Message]?
+            if let _ = reader.readInt32() {
+                _6 = Api.parseVector(reader, elementSignature: 0, elementType: Api.Message.self)
+            }
+            var _7: [Api.ForumTopic]?
+            if let _ = reader.readInt32() {
+                _7 = Api.parseVector(reader, elementSignature: 0, elementType: Api.ForumTopic.self)
+            }
+            var _8: [Api.Chat]?
+            if let _ = reader.readInt32() {
+                _8 = Api.parseVector(reader, elementSignature: 0, elementType: Api.Chat.self)
+            }
+            var _9: [Api.User]?
+            if let _ = reader.readInt32() {
+                _9 = Api.parseVector(reader, elementSignature: 0, elementType: Api.User.self)
+            }
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = (Int(_1!) & Int(1 << 0) == 0) || _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 2) == 0) || _4 != nil
+            let _c5 = (Int(_1!) & Int(1 << 3) == 0) || _5 == true
+            let _c6 = _6 != nil
+            let _c7 = _7 != nil
+            let _c8 = _8 != nil
+            let _c9 = _9 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 {
+                let sanitizedFlags = _1! & ~Int32(1 << 3)
+                return Api.messages.Messages.messagesSlice(flags: sanitizedFlags, count: _2!, nextRate: _3, offsetIdOffset: _4, messages: _6!, chats: _8!, users: _9!)
             }
             else {
                 return nil
