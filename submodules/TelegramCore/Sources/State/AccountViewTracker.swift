@@ -1060,22 +1060,35 @@ public final class AccountViewTracker {
                             guard let peer = peer else {
                                 return .complete()
                             }
-                            var fetchSignal: Signal<Api.messages.Messages, MTRpcError>?
+                            var fetchSignal: Signal<[Api.messages.Messages], MTRpcError>?
                             if let messageId = messageIds.first, messageId.namespace == Namespaces.Message.ScheduledCloud {
                                 if let inputPeer = apiInputPeer(peer) {
                                     fetchSignal = account.network.request(Api.functions.messages.getScheduledMessages(peer: inputPeer, id: messageIds.map { $0.id }))
+                                    |> map { [$0] }
                                 }
                             } else if let messageId = messageIds.first, messageId.namespace == Namespaces.Message.QuickReplyCloud {
                                 if let threadId = peerIdAndThreadId.threadId {
                                     fetchSignal = account.network.request(Api.functions.messages.getQuickReplyMessages(flags: 1 << 0, shortcutId: Int32(clamping: threadId), id: messageIds.map { $0.id }, hash: 0))
+                                    |> map { [$0] }
                                 } else {
                                     fetchSignal = .never()
                                 }
-                            } else if peerIdAndThreadId.peerId.namespace == Namespaces.Peer.CloudUser || peerIdAndThreadId.peerId.namespace == Namespaces.Peer.CloudGroup {
-                                fetchSignal = account.network.request(Api.functions.messages.getMessages(id: messageIds.map { Api.InputMessage.inputMessageID(id: $0.id) }))
-                            } else if peerIdAndThreadId.peerId.namespace == Namespaces.Peer.CloudChannel {
-                                if let inputChannel = apiInputChannel(peer) {
-                                    fetchSignal = account.network.request(Api.functions.channels.getMessages(channel: inputChannel, id: messageIds.map { Api.InputMessage.inputMessageID(id: $0.id) }))
+                            } else if let inputPeer = apiInputPeer(peer), peerIdAndThreadId.peerId.namespace == Namespaces.Peer.CloudUser || peerIdAndThreadId.peerId.namespace == Namespaces.Peer.CloudGroup || peerIdAndThreadId.peerId.namespace == Namespaces.Peer.CloudChannel {
+                                var requests: [Signal<Api.messages.Messages, MTRpcError>] = []
+                                for messageId in messageIds {
+                                    let fallback: Signal<Api.messages.Messages, MTRpcError>
+                                    if peerIdAndThreadId.peerId.namespace == Namespaces.Peer.CloudChannel, let inputChannel = apiInputChannel(peer) {
+                                        fallback = account.network.request(Api.functions.channels.getMessages(channel: inputChannel, id: [Api.InputMessage.inputMessageID(id: messageId.id)]))
+                                    } else {
+                                        fallback = account.network.request(Api.functions.messages.getMessages(id: [Api.InputMessage.inputMessageID(id: messageId.id)]))
+                                    }
+                                    requests.append(account.network.request(Api.functions.messages.getRichMessage(peer: inputPeer, id: messageId.id))
+                                    |> `catch` { _ -> Signal<Api.messages.Messages, MTRpcError> in
+                                        return fallback
+                                    })
+                                }
+                                if !requests.isEmpty {
+                                    fetchSignal = combineLatest(requests)
                                 }
                             }
                             guard let signal = fetchSignal else {
@@ -1083,17 +1096,29 @@ public final class AccountViewTracker {
                             }
                             
                             return signal
-                            |> map { result -> (Peer, [Api.Message], [Api.Chat], [Api.User]) in
+                            |> map { results -> (Peer, [Api.Message], [Api.Chat], [Api.User]) in
+                                var mergedMessages: [Api.Message] = []
+                                var mergedChats: [Api.Chat] = []
+                                var mergedUsers: [Api.User] = []
+                                for result in results {
                                 switch result {
                                     case let .messages(messages, chats, users):
-                                        return (peer, messages, chats, users)
+                                        mergedMessages.append(contentsOf: messages)
+                                        mergedChats.append(contentsOf: chats)
+                                        mergedUsers.append(contentsOf: users)
                                     case let .messagesSlice(_, _, _, _, messages, chats, users):
-                                        return (peer, messages, chats, users)
+                                        mergedMessages.append(contentsOf: messages)
+                                        mergedChats.append(contentsOf: chats)
+                                        mergedUsers.append(contentsOf: users)
                                     case let .channelMessages(_, _, _, _, messages, _, chats, users):
-                                        return (peer, messages, chats, users)
+                                        mergedMessages.append(contentsOf: messages)
+                                        mergedChats.append(contentsOf: chats)
+                                        mergedUsers.append(contentsOf: users)
                                     case .messagesNotModified:
-                                        return (peer, [], [], [])
+                                        break
                                 }
+                                }
+                                return (peer, mergedMessages, mergedChats, mergedUsers)
                             }
                             |> `catch` { _ in
                                 return Signal<(Peer, [Api.Message], [Api.Chat], [Api.User]), NoError>.single((peer, [], [], []))

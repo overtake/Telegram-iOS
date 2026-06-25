@@ -579,6 +579,45 @@ public extension Api {
                 return nil
             }
         }
+        public static func parse_pollWithHash(_ reader: BufferReader) -> Poll? {
+            var _1: Int64?
+            _1 = reader.readInt64()
+            var _2: Int32?
+            _2 = reader.readInt32()
+            var _3: Api.TextWithEntities?
+            if let signature = reader.readInt32() {
+                _3 = Api.parse(reader, signature: signature) as? Api.TextWithEntities
+            }
+            var _4: [Api.PollAnswer]?
+            if let _ = reader.readInt32() {
+                _4 = Api.parseVector(reader, elementSignature: 0, elementType: Api.PollAnswer.self)
+            }
+            var _5: Int32?
+            if Int(_2!) & Int(1 << 4) != 0 {_5 = reader.readInt32() }
+            var _6: Int32?
+            if Int(_2!) & Int(1 << 5) != 0 {_6 = reader.readInt32() }
+            var _7: [String]?
+            if Int(_2!) & Int(1 << 12) != 0 {if let _ = reader.readInt32() {
+                _7 = Api.parseVector(reader, elementSignature: -1255641564, elementType: String.self)
+            } }
+            var _8: Int64?
+            _8 = reader.readInt64()
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = _3 != nil
+            let _c4 = _4 != nil
+            let _c5 = (Int(_2!) & Int(1 << 4) == 0) || _5 != nil
+            let _c6 = (Int(_2!) & Int(1 << 5) == 0) || _6 != nil
+            let _c7 = (Int(_2!) & Int(1 << 12) == 0) || _7 != nil
+            let _c8 = _8 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 {
+                let normalizedFlags = _2! & ~Int32(1 << 12)
+                return Api.Poll.poll(id: _1!, flags: normalizedFlags, question: _3!, answers: _4!, closePeriod: _5, closeDate: _6)
+            }
+            else {
+                return nil
+            }
+        }
     
     }
 }
@@ -616,6 +655,38 @@ public extension Api {
             let _c2 = _2 != nil
             if _c1 && _c2 {
                 return Api.PollAnswer.pollAnswer(text: _1!, option: _2!)
+            }
+            else {
+                return nil
+            }
+        }
+        public static func parse_pollAnswerWithMedia(_ reader: BufferReader) -> PollAnswer? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Api.TextWithEntities?
+            if let signature = reader.readInt32() {
+                _2 = Api.parse(reader, signature: signature) as? Api.TextWithEntities
+            }
+            var _3: Buffer?
+            _3 = parseBytes(reader)
+            var _4: Api.MessageMedia?
+            if Int(_1!) & Int(1 << 0) != 0 {if let signature = reader.readInt32() {
+                _4 = Api.parse(reader, signature: signature) as? Api.MessageMedia
+            } }
+            var _5: Api.Peer?
+            if Int(_1!) & Int(1 << 1) != 0 {if let signature = reader.readInt32() {
+                _5 = Api.parse(reader, signature: signature) as? Api.Peer
+            } }
+            var _6: Int32?
+            if Int(_1!) & Int(1 << 1) != 0 {_6 = reader.readInt32() }
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 0) == 0) || _4 != nil
+            let _c5 = (Int(_1!) & Int(1 << 1) == 0) || _5 != nil
+            let _c6 = (Int(_1!) & Int(1 << 1) == 0) || _6 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 {
+                return Api.PollAnswer.pollAnswer(text: _2!, option: _3!)
             }
             else {
                 return nil
@@ -660,6 +731,29 @@ public extension Api {
             let _c3 = _3 != nil
             if _c1 && _c2 && _c3 {
                 return Api.PollAnswerVoters.pollAnswerVoters(flags: _1!, option: _2!, voters: _3!)
+            }
+            else {
+                return nil
+            }
+        }
+        public static func parse_pollAnswerVotersWithRecentVoters(_ reader: BufferReader) -> PollAnswerVoters? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Buffer?
+            _2 = parseBytes(reader)
+            var _3: Int32?
+            if Int(_1!) & Int(1 << 2) != 0 {_3 = reader.readInt32() }
+            var _4: [Api.Peer]?
+            if Int(_1!) & Int(1 << 2) != 0 {if let _ = reader.readInt32() {
+                _4 = Api.parseVector(reader, elementSignature: 0, elementType: Api.Peer.self)
+            } }
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = (Int(_1!) & Int(1 << 2) == 0) || _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 2) == 0) || _4 != nil
+            if _c1 && _c2 && _c3 && _c4 {
+                let normalizedFlags = _1! & ~Int32(1 << 2)
+                return Api.PollAnswerVoters.pollAnswerVoters(flags: normalizedFlags, option: _2!, voters: _3 ?? 0)
             }
             else {
                 return nil
@@ -734,6 +828,44 @@ public extension Api {
             let _c6 = (Int(_1!) & Int(1 << 4) == 0) || _6 != nil
             if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 {
                 return Api.PollResults.pollResults(flags: _1!, results: _2, totalVoters: _3, recentVoters: _4, solution: _5, solutionEntities: _6)
+            }
+            else {
+                return nil
+            }
+        }
+        public static func parse_pollResultsWithSolutionMedia(_ reader: BufferReader) -> PollResults? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: [Api.PollAnswerVoters]?
+            if Int(_1!) & Int(1 << 1) != 0 {if let _ = reader.readInt32() {
+                _2 = Api.parseVector(reader, elementSignature: 0, elementType: Api.PollAnswerVoters.self)
+            } }
+            var _3: Int32?
+            if Int(_1!) & Int(1 << 2) != 0 {_3 = reader.readInt32() }
+            var _4: [Api.Peer]?
+            if Int(_1!) & Int(1 << 3) != 0 {if let _ = reader.readInt32() {
+                _4 = Api.parseVector(reader, elementSignature: 0, elementType: Api.Peer.self)
+            } }
+            var _5: String?
+            if Int(_1!) & Int(1 << 4) != 0 {_5 = parseString(reader) }
+            var _6: [Api.MessageEntity]?
+            if Int(_1!) & Int(1 << 4) != 0 {if let _ = reader.readInt32() {
+                _6 = Api.parseVector(reader, elementSignature: 0, elementType: Api.MessageEntity.self)
+            } }
+            var _7: Api.MessageMedia?
+            if Int(_1!) & Int(1 << 5) != 0 {if let signature = reader.readInt32() {
+                _7 = Api.parse(reader, signature: signature) as? Api.MessageMedia
+            } }
+            let _c1 = _1 != nil
+            let _c2 = (Int(_1!) & Int(1 << 1) == 0) || _2 != nil
+            let _c3 = (Int(_1!) & Int(1 << 2) == 0) || _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 3) == 0) || _4 != nil
+            let _c5 = (Int(_1!) & Int(1 << 4) == 0) || _5 != nil
+            let _c6 = (Int(_1!) & Int(1 << 4) == 0) || _6 != nil
+            let _c7 = (Int(_1!) & Int(1 << 5) == 0) || _7 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 {
+                let normalizedFlags = _1! & ~Int32((1 << 5) | (1 << 6) | (1 << 7))
+                return Api.PollResults.pollResults(flags: normalizedFlags, results: _2, totalVoters: _3, recentVoters: _4, solution: _5, solutionEntities: _6)
             }
             else {
                 return nil

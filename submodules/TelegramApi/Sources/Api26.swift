@@ -484,6 +484,14 @@ public extension Api {
             if Int(_1!) & Int(1 << 15) != 0 {if let signature = reader.readInt32() {
                 _13 = Api.parse(reader, signature: signature) as? Api.Reaction
             } }
+            var _14: [Int32]?
+            if Int(_1!) & Int(1 << 19) != 0 {if let _ = reader.readInt32() {
+                _14 = Api.parseVector(reader, elementSignature: -1471112230, elementType: Int32.self)
+            } }
+            var _15: Api.Document?
+            if Int(_1!) & Int(1 << 20) != 0 {if let signature = reader.readInt32() {
+                _15 = Api.parse(reader, signature: signature) as? Api.Document
+            } }
             let _c1 = _1 != nil
             let _c2 = _2 != nil
             let _c3 = _3 != nil
@@ -497,8 +505,11 @@ public extension Api {
             let _c11 = (Int(_1!) & Int(1 << 2) == 0) || _11 != nil
             let _c12 = (Int(_1!) & Int(1 << 3) == 0) || _12 != nil
             let _c13 = (Int(_1!) & Int(1 << 15) == 0) || _13 != nil
-            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 && _c12 && _c13 {
-                return Api.StoryItem.storyItem(flags: _1!, id: _2!, date: _3!, fromId: _4, fwdFrom: _5, expireDate: _6!, caption: _7, entities: _8, media: _9!, mediaAreas: _10, privacy: _11, views: _12, sentReaction: _13)
+            let _c14 = (Int(_1!) & Int(1 << 19) == 0) || _14 != nil
+            let _c15 = (Int(_1!) & Int(1 << 20) == 0) || _15 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 && _c12 && _c13 && _c14 && _c15 {
+                let sanitizedFlags = _1! & ~((Int32(1) << 19) | (Int32(1) << 20))
+                return Api.StoryItem.storyItem(flags: sanitizedFlags, id: _2!, date: _3!, fromId: _4, fwdFrom: _5, expireDate: _6!, caption: _7, entities: _8, media: _9!, mediaAreas: _10, privacy: _11, views: _12, sentReaction: _13)
             }
             else {
                 return nil

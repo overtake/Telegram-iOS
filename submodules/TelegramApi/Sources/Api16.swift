@@ -1235,6 +1235,31 @@ public extension Api {
                 return nil
             }
         }
+        public static func parse_messageMediaPhotoWithVideo(_ reader: BufferReader) -> MessageMedia? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Api.Photo?
+            if Int(_1!) & Int(1 << 0) != 0 {if let signature = reader.readInt32() {
+                _2 = Api.parse(reader, signature: signature) as? Api.Photo
+            } }
+            var _3: Int32?
+            if Int(_1!) & Int(1 << 2) != 0 {_3 = reader.readInt32() }
+            var _4: Api.Document?
+            if Int(_1!) & Int(1 << 4) != 0 {if let signature = reader.readInt32() {
+                _4 = Api.parse(reader, signature: signature) as? Api.Document
+            } }
+            let _c1 = _1 != nil
+            let _c2 = (Int(_1!) & Int(1 << 0) == 0) || _2 != nil
+            let _c3 = (Int(_1!) & Int(1 << 2) == 0) || _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 4) == 0) || _4 != nil
+            if _c1 && _c2 && _c3 && _c4 {
+                let sanitizedFlags = _1! & ~Int32(1 << 4)
+                return Api.MessageMedia.messageMediaPhoto(flags: sanitizedFlags, photo: _2, ttlSeconds: _3)
+            }
+            else {
+                return nil
+            }
+        }
         public static func parse_messageMediaPoll(_ reader: BufferReader) -> MessageMedia? {
             var _1: Api.Poll?
             if let signature = reader.readInt32() {
@@ -1248,6 +1273,32 @@ public extension Api {
             let _c2 = _2 != nil
             if _c1 && _c2 {
                 return Api.MessageMedia.messageMediaPoll(poll: _1!, results: _2!)
+            }
+            else {
+                return nil
+            }
+        }
+        public static func parse_messageMediaPollWithAttachedMedia(_ reader: BufferReader) -> MessageMedia? {
+            var _1: Int32?
+            _1 = reader.readInt32()
+            var _2: Api.Poll?
+            if let signature = reader.readInt32() {
+                _2 = Api.parse(reader, signature: signature) as? Api.Poll
+            }
+            var _3: Api.PollResults?
+            if let signature = reader.readInt32() {
+                _3 = Api.parse(reader, signature: signature) as? Api.PollResults
+            }
+            var _4: Api.MessageMedia?
+            if Int(_1!) & Int(1 << 0) != 0 {if let signature = reader.readInt32() {
+                _4 = Api.parse(reader, signature: signature) as? Api.MessageMedia
+            } }
+            let _c1 = _1 != nil
+            let _c2 = _2 != nil
+            let _c3 = _3 != nil
+            let _c4 = (Int(_1!) & Int(1 << 0) == 0) || _4 != nil
+            if _c1 && _c2 && _c3 && _c4 {
+                return Api.MessageMedia.messageMediaPoll(poll: _2!, results: _3!)
             }
             else {
                 return nil
