@@ -160,6 +160,8 @@ public extension Api {
             } }
             var _5: Int32?
             if Int(_1!) & Int(1 << 29) != 0 {_5 = reader.readInt32() }
+            var _5a: String?
+            if Int(_2!) & Int(1 << 12) != 0 {_5a = parseString(reader) }
             var _6: Api.Peer?
             if let signature = reader.readInt32() {
                 _6 = Api.parse(reader, signature: signature) as? Api.Peer
@@ -176,6 +178,10 @@ public extension Api {
             if Int(_1!) & Int(1 << 11) != 0 {_9 = reader.readInt64() }
             var _10: Int64?
             if Int(_2!) & Int(1 << 0) != 0 {_10 = reader.readInt64() }
+            var _10a: Api.Peer?
+            if Int(_2!) & Int(1 << 19) != 0 {if let signature = reader.readInt32() {
+                _10a = Api.parse(reader, signature: signature) as? Api.Peer
+            } }
             var _11: Api.MessageReplyHeader?
             if Int(_1!) & Int(1 << 3) != 0 {if let signature = reader.readInt32() {
                 _11 = Api.parse(reader, signature: signature) as? Api.MessageReplyHeader
@@ -236,16 +242,26 @@ public extension Api {
             if Int(_2!) & Int(1 << 7) != 0 {if let signature = reader.readInt32() {
                 _31 = Api.parse(reader, signature: signature) as? Api.SuggestedPost
             } }
+            var _31a: Int32?
+            if Int(_2!) & Int(1 << 10) != 0 {_31a = reader.readInt32() }
+            var _31b: String?
+            if Int(_2!) & Int(1 << 11) != 0 {_31b = parseString(reader) }
+            var _32: String?
+            if Int(_2!) & Int(1 << 13) != 0 {if let signature = reader.readInt32() {
+                _32 = parseRichMessageFallbackText(reader: reader, signature: signature)
+            } }
             let _c1 = _1 != nil
             let _c2 = _2 != nil
             let _c3 = _3 != nil
             let _c4 = (Int(_1!) & Int(1 << 8) == 0) || _4 != nil
             let _c5 = (Int(_1!) & Int(1 << 29) == 0) || _5 != nil
+            let _c5a = (Int(_2!) & Int(1 << 12) == 0) || _5a != nil
             let _c6 = _6 != nil
             let _c7 = (Int(_1!) & Int(1 << 28) == 0) || _7 != nil
             let _c8 = (Int(_1!) & Int(1 << 2) == 0) || _8 != nil
             let _c9 = (Int(_1!) & Int(1 << 11) == 0) || _9 != nil
             let _c10 = (Int(_2!) & Int(1 << 0) == 0) || _10 != nil
+            let _c10a = (Int(_2!) & Int(1 << 19) == 0) || _10a != nil
             let _c11 = (Int(_1!) & Int(1 << 3) == 0) || _11 != nil
             let _c12 = _12 != nil
             let _c13 = _13 != nil
@@ -267,8 +283,26 @@ public extension Api {
             let _c29 = (Int(_2!) & Int(1 << 5) == 0) || _29 != nil
             let _c30 = (Int(_2!) & Int(1 << 6) == 0) || _30 != nil
             let _c31 = (Int(_2!) & Int(1 << 7) == 0) || _31 != nil
-            if _c1 && _c2 && _c3 && _c4 && _c5 && _c6 && _c7 && _c8 && _c9 && _c10 && _c11 && _c12 && _c13 && _c14 && _c15 && _c16 && _c17 && _c18 && _c19 && _c20 && _c21 && _c22 && _c23 && _c24 && _c25 && _c26 && _c27 && _c28 && _c29 && _c30 && _c31 {
-                return Api.Message.message(flags: _1!, flags2: _2!, id: _3!, fromId: _4, fromBoostsApplied: _5, peerId: _6!, savedPeerId: _7, fwdFrom: _8, viaBotId: _9, viaBusinessBotId: _10, replyTo: _11, date: _12!, message: _13!, media: _14, replyMarkup: _15, entities: _16, views: _17, forwards: _18, replies: _19, editDate: _20, postAuthor: _21, groupedId: _22, reactions: _23, restrictionReason: _24, ttlPeriod: _25, quickReplyShortcutId: _26, effect: _27, factcheck: _28, reportDeliveryUntilDate: _29, paidMessageStars: _30, suggestedPost: _31)
+            let _c31a = (Int(_2!) & Int(1 << 10) == 0) || _31a != nil
+            let _c31b = (Int(_2!) & Int(1 << 11) == 0) || _31b != nil
+            let _c32 = (Int(_2!) & Int(1 << 13) == 0) || _32 != nil
+            if _c1 && _c2 && _c3 && _c4 && _c5 && _c5a && _c6 && _c7 && _c8 && _c9 && _c10 && _c10a && _c11 && _c12 && _c13 && _c14 && _c15 && _c16 && _c17 && _c18 && _c19 && _c20 && _c21 && _c22 && _c23 && _c24 && _c25 && _c26 && _c27 && _c28 && _c29 && _c30 && _c31 && _c31a && _c31b && _c32 {
+                let dropUnsupportedMedia: Swift.Bool
+                if _32 != nil, case .messageMediaUnsupported? = _14 {
+                    dropUnsupportedMedia = true
+                } else {
+                    dropUnsupportedMedia = false
+                }
+                let messageText: String
+                if dropUnsupportedMedia, let richFallbackText = _32 {
+                    messageText = mergeRichMessageFallback(message: _13!, fallback: richFallbackText)
+                } else {
+                    messageText = _13!.isEmpty ? (_32 ?? _13!) : _13!
+                }
+                let flags2UnsupportedMask = Int32(1 << 10) | Int32(1 << 11) | Int32(1 << 12) | Int32(1 << 13) | Int32(1 << 19)
+                let sanitizedFlags = dropUnsupportedMedia ? (_1! & ~Int32(1 << 9)) : _1!
+                let sanitizedFlags2 = _2! & ~flags2UnsupportedMask
+                return Api.Message.message(flags: sanitizedFlags, flags2: sanitizedFlags2, id: _3!, fromId: _4, fromBoostsApplied: _5, peerId: _6!, savedPeerId: _7, fwdFrom: _8, viaBotId: _9, viaBusinessBotId: _10, replyTo: _11, date: _12!, message: messageText, media: dropUnsupportedMedia ? nil : _14, replyMarkup: _15, entities: _16, views: _17, forwards: _18, replies: _19, editDate: _20, postAuthor: _21, groupedId: _22, reactions: _23, restrictionReason: _24, ttlPeriod: _25, quickReplyShortcutId: _26, effect: _27, factcheck: _28, reportDeliveryUntilDate: _29, paidMessageStars: _30, suggestedPost: _31)
             }
             else {
                 return nil
