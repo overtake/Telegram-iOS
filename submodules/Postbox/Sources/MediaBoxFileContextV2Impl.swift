@@ -350,15 +350,16 @@ public final class MediaBoxFileContextV2Impl: MediaBoxFileContext {
                             self.hasPerformedAnyFetch = true
                             
                             let queue = self.queue
+                            // justDispatch so a synchronously emitted part can't re-enter processFetchResult
                             disposable.set(fetchImpl(pendingFetch.ranges.get()).startStrict(next: { [weak self] result in
-                                queue.async {
+                                queue.justDispatch {
                                     guard let `self` = self else {
                                         return
                                     }
                                     self.processFetchResult(result: result)
                                 }
                             }, error: { [weak self] error in
-                                queue.async {
+                                queue.justDispatch {
                                     guard let `self` = self else {
                                         return
                                     }
